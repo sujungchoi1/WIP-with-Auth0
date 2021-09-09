@@ -1,0 +1,17 @@
+.nav {
+    height: 80px;
+    padding: 20px;
+    background: rgb(73, 72, 72);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .nav a, .nav h3 {
+    color: #fff;
+    text-decoration: none;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 30px;
+  }
+
