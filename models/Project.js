@@ -48,11 +48,11 @@ const ProjectSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     }
-    ,
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: 'users'
-    }
+    // ,
+    // user: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'users'
+    // }
     
 });
 

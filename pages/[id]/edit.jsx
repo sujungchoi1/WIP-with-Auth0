@@ -1,44 +1,51 @@
 import { useState, useEffect } from 'react';
-import { Button, Form, Loader } from 'semantic-ui-react';
+import { Button, Form, Option } from 'semantic-ui-react';
 import { useRouter } from 'next/router';
-import formStyles from '../styles/Form.module.css'
-import { useUser, getSession } from '@auth0/nextjs-auth0';
+import formStyles from '../../styles/Form.module.css'
+import Project from '../../models/Project';
+import dbConnect from '../../lib/dbConnect';
 
-const NewProject = () => {
-    // const { user } = useUser();
-    // To get user info for creating projects
-    // const mongoId = user._id.substring(6)
-    
+const EditProject = ({ project }) => {
     const router = useRouter();
     const [errors, setErrors] = useState({});
-    const [message, setMessage] = useState('')
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [form, setForm] = useState({
-        patternName: "",
-        image_URL: "",
-        projectCategory: "",
-        dateStarted: "",
-        estimatedEndDate: "",
-        hookSize: "",
-        patternLocation: "",
-        yarnBrand: "",
-        yarnColor: "",
-        notes: "",
-        completed: false,
-        // user: user ?? null
+        patternName: project.patternName,
+        image_URL: project.image_URL,
+        projectCategory: project.projectCategory,
+        dateStarted: project.dateStarted,
+        estimatedEndDate: project.estimatedEndDate,
+        hookSize: project.hookSize,
+        patternLocation: project.patternLocation,
+        yarnBrand: project.yarnBrand,
+        yarnColor: project.yarnColor,
+        notes: project.notes,
+        completed: project.completed,
     });
 
     // const options = [
-    //     { key: 'c', text: 'Crochet', value: 'crochet' },
-    //     { key: 'k', text: 'Knit', value: 'knit' },
-    //     { key: 'e', text: 'Embroidery', value: 'embroidery' },
-    //     { key: 'o', text: 'Other', value: 'other' },
+    //     { text: 'Crochet', value: 'crochet' },
+    //     { text: 'Knit', value: 'knit' },
+    //     { text: 'Embroidery', value: 'embroidery' },
+    //     { text: 'Other', value: 'other' },
     // ]
 
-    const createProject = async () => {
+    useEffect(() => {
+        if (isSubmitting) {
+            if (Object.keys(errors).length === 0) {
+                updateProject();
+            }
+            else {
+                setIsSubmitting(false);
+            }
+        }
+    }, [errors])
+
+    const updateProject = async () => {
         try {
-            const res = await fetch('/api/projects', {
-                method: 'POST',
+            const res = await fetch(`/api/projects/${router.query.id}`, {
+                method: 'PUT',
                 headers: {
                     "Accept": "application/json",
                     "Content-Type": "application/json"
@@ -47,7 +54,7 @@ const NewProject = () => {
             })
             router.push("/");
         } catch (error) {
-            setMessage('Failed to add project')
+            console.log(error);
         }
     }
 
@@ -60,12 +67,9 @@ const NewProject = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const errs = validate()
-        if (Object.keys(errs).length === 0) {
-          createProject(form)
-        } else {
-          setErrors({ errs })
-        }
+        let errs = validate()
+        setErrors(errs);
+        setIsSubmitting(true);
     }
 
     const validate = () => {
@@ -79,7 +83,7 @@ const NewProject = () => {
     return (
         <div className={formStyles.container}>
             {/* {user && <h2>hi {user.name}</h2>} */}
-            <h1>Create Note</h1>
+            <h1>Update Note</h1>
             <div className={formStyles.form}>
                 {
                         <Form onSubmit={handleSubmit}>
@@ -89,6 +93,7 @@ const NewProject = () => {
                                 type="text"
                                 name="patternName"
                                 onChange={handleChange}
+                                value={form.patternName}
                                 required
                             />
                             <Form.Input
@@ -96,19 +101,28 @@ const NewProject = () => {
                                 type="url"
                                 name="image_URL"
                                 onChange={handleChange}
+                                value={form.image_URL}
                             />
 
                             {/* <Form.Select
                                 label="Project Category"
-                                options={options}
+                                // options={options}
                                 name="projectCategory"
                                 onChange={handleChange}
-                            /> */}
+                                value={form.projectCategory}
+                            >
+                                <Option value="default" >Please select</Option>
+                                <Option value="Crochet" >Crochet</Option>
+                                <Option value="Knit" >Knit</Option>
+                                <Option value="Embroidery">Embroidery</Option>
+                                <Option value="Other">Other</Option>
+                            </Form.Select> */}
                             <Form.Input
                                 label="Project Category"
                                 type="text"
                                 name="projectCategory"
                                 onChange={handleChange}
+                                value={form.projectCategory}
                             />
                             <p>date picker here</p>
 
@@ -154,14 +168,13 @@ const NewProject = () => {
     )
 }
 
-// ** doens't work 
-// export async function getServerSideProps(ctx) {
-//     const { req, res } = ctx;
-//     const session = getSession(req, res);
-  
-//     return {
-//       props: { user: session?.user ?? null }
-//     }
-//   }
+export async function getServerSideProps({ params }) {
+    await dbConnect();
 
-export default NewProject;
+    const project = await Project.findById(params.id).lean()
+    project._id = project._id.toString()
+  
+    return { props: { project }}
+}
+
+export default EditProject;

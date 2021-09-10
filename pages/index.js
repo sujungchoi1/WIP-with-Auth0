@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import dbConnect from '../lib/dbConnect'
+import dbConnect from '../lib/dbConnect';
 import Project from '../models/Project'
 import { Button, Card, Image } from 'semantic-ui-react'
 import { useUser } from '@auth0/nextjs-auth0';
@@ -25,22 +25,30 @@ const Index = ({ projects }) => {
               floated='left'
               size='small'
               src={project.image_URL}
-              alt='steve'
+              alt={project.patternName}
             />
             <Card.Header>{project.patternName}</Card.Header>
-            <Card.Meta>Friends of Elliot</Card.Meta>
-            <Card.Description>
+            <Card.Meta>{project.projectCategory}</Card.Meta>
+            {/* <Card.Description>
               Steve wants to add you to the group <strong>best friends</strong>
-            </Card.Description>
+            </Card.Description> */}
           </Card.Content>
           <Card.Content extra>
             <div className='ui two buttons'>
-              <Button basic color='green'>
-                Approve
-              </Button>
-              <Button basic color='red'>
-                Decline
-              </Button>
+              <Link href={`/${project._id}/edit`} >
+                <a>
+                  <Button basic color='green'>
+                    UPDATE
+                  </Button>
+                </a>
+              </Link>
+              <Link href={`/${project._id}`}>
+                <a>
+                  <Button basic color='red'>
+                    DELETE
+                  </Button>
+                </a>
+              </Link>
             </div>
           </Card.Content>
         </Card>
@@ -61,7 +69,7 @@ export async function getServerSideProps() {
     return project
   })
 
-  return { props: { projects: projects }}
+  return { props: { projects: projects } }
 }
 
 export default Index
